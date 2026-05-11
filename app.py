@@ -235,6 +235,17 @@ footer {
     display: none !important;
 }
 
+/* The phone-shell is always narrower than Streamlit's 640px column-stack */
+/* breakpoint, so we force every column to keep its requested flex basis */
+/* without min-width stacking. */
+.block-container [data-testid="stHorizontalBlock"] {
+    flex-wrap: nowrap;
+}
+
+.block-container [data-testid="stColumn"] {
+    min-width: 0 !important;
+}
+
 .phone-shell {
     display: contents;
 }
@@ -262,18 +273,33 @@ footer {
     padding: 14px 20px 12px;
 }
 
+/* collection-tabs is an empty anchor div produced via st.markdown. */
+/* Streamlit emits each markdown / widget as a sibling stElementContainer, */
+/* so we use :has() to find the anchor's container and select its next */
+/* sibling — which is the stLayoutWrapper that holds the actual tab columns. */
 .collection-tabs {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+[data-testid="stElementContainer"]:has(> div > div > div > .collection-tabs) + [data-testid="stLayoutWrapper"] {
     border-bottom: 1px solid #eeeeee;
     background: #ffffff;
     padding: 0 20px;
-    margin-bottom: 0;
+    margin: 0 0 4px;
 }
 
-.collection-tabs [data-testid="stHorizontalBlock"] {
+[data-testid="stElementContainer"]:has(> div > div > div > .collection-tabs) + [data-testid="stLayoutWrapper"] [data-testid="stHorizontalBlock"] {
     gap: 0;
+    flex-wrap: nowrap;
+}
+
+[data-testid="stElementContainer"]:has(> div > div > div > .collection-tabs) + [data-testid="stLayoutWrapper"] [data-testid="stColumn"] {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 0 !important;
+    flex: 1 1 50% !important;
 }
 
 .tab-label {
@@ -294,29 +320,19 @@ footer {
     background: #ff2d55;
 }
 
-.collection-tabs div.stButton > button {
+[data-testid="stElementContainer"]:has(> div > div > div > .collection-tabs) + [data-testid="stLayoutWrapper"] div.stButton > button {
+    width: auto;
     min-height: 36px;
-    border: 0;
+    padding: 10px 0 8px;
+    border: 0 !important;
     background: transparent !important;
     color: #8f8f8f;
     font-size: 14px;
     font-weight: 750;
     box-shadow: none !important;
-    padding: 10px 0 8px;
 }
 
-.collection-tabs div.stButton > button:hover {
-    color: #222222;
-    border: 0;
-    background: transparent !important;
-    box-shadow: none !important;
-}
-
-.collection-tabs div.stButton > button:focus,
-.collection-tabs div.stButton > button:active {
-    border: 0;
-    background: transparent !important;
-    box-shadow: none !important;
+[data-testid="stElementContainer"]:has(> div > div > div > .collection-tabs) + [data-testid="stLayoutWrapper"] div.stButton > button:hover {
     color: #222222;
 }
 
@@ -636,28 +652,40 @@ footer {
 }
 
 .success-card-actions {
-    display: flex;
-    justify-content: flex-end;
-    margin: 0 0 6px;
+    height: 0;
+    overflow: hidden;
 }
 
-.success-card-actions div.stButton > button {
+/* Overlay the dismiss button onto the success card's top-right via */
+/* the same sibling-overlap technique used for the value-banner close. */
+[data-testid="stElementContainer"]:has(> div > div > div > .success-card-actions) + [data-testid="stElementContainer"] {
+    position: relative;
+    width: 30px;
+    margin-left: auto;
+    margin-right: 6px;
+    margin-top: 8px;
+    margin-bottom: -38px;
+    z-index: 5;
+}
+
+[data-testid="stElementContainer"]:has(> div > div > div > .success-card-actions) + [data-testid="stElementContainer"] div.stButton > button {
     width: 26px;
     min-width: 26px;
     height: 26px;
     min-height: 26px;
     padding: 0;
     border-radius: 999px;
-    border: 1px solid #eeeeee;
-    background: #ffffff;
+    border: 1px solid #eeeeee !important;
+    background: #ffffff !important;
     color: #999999;
     font-size: 13px;
+    box-shadow: none !important;
 }
 
-.success-card-actions div.stButton > button:hover {
-    border-color: #ff2d55;
+[data-testid="stElementContainer"]:has(> div > div > div > .success-card-actions) + [data-testid="stElementContainer"] div.stButton > button:hover {
+    border-color: #ff2d55 !important;
     color: #ff2d55;
-    background: #ffffff;
+    background: #ffffff !important;
 }
 
 .metric {
