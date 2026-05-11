@@ -235,6 +235,17 @@ footer {
     display: none !important;
 }
 
+/* The phone-shell is always narrower than Streamlit's 640px column-stack */
+/* breakpoint, so we force every column to keep its requested flex basis */
+/* without min-width stacking. */
+.block-container [data-testid="stHorizontalBlock"] {
+    flex-wrap: nowrap;
+}
+
+.block-container [data-testid="stColumn"] {
+    min-width: 0 !important;
+}
+
 .phone-shell {
     display: contents;
 }
@@ -262,18 +273,33 @@ footer {
     padding: 14px 20px 12px;
 }
 
+/* collection-tabs is an empty anchor div produced via st.markdown. */
+/* Streamlit emits each markdown / widget as a sibling stElementContainer, */
+/* so we use :has() to find the anchor's container and select its next */
+/* sibling — which is the stLayoutWrapper that holds the actual tab columns. */
 .collection-tabs {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+[data-testid="stElementContainer"]:has(> div > div > div > .collection-tabs) + [data-testid="stLayoutWrapper"] {
     border-bottom: 1px solid #eeeeee;
     background: #ffffff;
     padding: 0 20px;
-    margin-bottom: 0;
+    margin: 0 0 4px;
 }
 
-.collection-tabs [data-testid="stHorizontalBlock"] {
+[data-testid="stElementContainer"]:has(> div > div > div > .collection-tabs) + [data-testid="stLayoutWrapper"] [data-testid="stHorizontalBlock"] {
     gap: 0;
+    flex-wrap: nowrap;
+}
+
+[data-testid="stElementContainer"]:has(> div > div > div > .collection-tabs) + [data-testid="stLayoutWrapper"] [data-testid="stColumn"] {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 0 !important;
+    flex: 1 1 50% !important;
 }
 
 .tab-label {
@@ -294,29 +320,19 @@ footer {
     background: #ff2d55;
 }
 
-.collection-tabs div.stButton > button {
+[data-testid="stElementContainer"]:has(> div > div > div > .collection-tabs) + [data-testid="stLayoutWrapper"] div.stButton > button {
+    width: auto;
     min-height: 36px;
-    border: 0;
+    padding: 10px 0 8px;
+    border: 0 !important;
     background: transparent !important;
     color: #8f8f8f;
     font-size: 14px;
     font-weight: 750;
     box-shadow: none !important;
-    padding: 10px 0 8px;
 }
 
-.collection-tabs div.stButton > button:hover {
-    color: #222222;
-    border: 0;
-    background: transparent !important;
-    box-shadow: none !important;
-}
-
-.collection-tabs div.stButton > button:focus,
-.collection-tabs div.stButton > button:active {
-    border: 0;
-    background: transparent !important;
-    box-shadow: none !important;
+[data-testid="stElementContainer"]:has(> div > div > div > .collection-tabs) + [data-testid="stLayoutWrapper"] div.stButton > button:hover {
     color: #222222;
 }
 
@@ -402,6 +418,201 @@ footer {
     color: #8b8b8b;
     font-size: 10px;
     line-height: 1.2;
+}
+
+.value-banner-wrap {
+    margin: 4px 0 14px;
+    position: relative;
+}
+
+.value-banner {
+    position: relative;
+    border-radius: 14px;
+    padding: 12px 38px 12px 46px;
+    background:
+        radial-gradient(circle at 88% -10%, rgba(255, 215, 221, 0.95), transparent 55%),
+        linear-gradient(135deg, #fff4f6 0%, #ffffff 78%);
+    border: 1px solid #ffe0e4;
+    box-shadow: 0 6px 16px rgba(255, 45, 85, 0.06);
+    overflow: hidden;
+}
+
+.value-banner::before {
+    content: "✨";
+    position: absolute;
+    left: 14px;
+    top: 13px;
+    width: 22px;
+    height: 22px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: #ff2d55;
+    color: #ffffff;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.value-banner h4 {
+    margin: 0 0 3px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #1f1f24;
+    line-height: 1.3;
+}
+
+.value-banner p {
+    margin: 0;
+    font-size: 11px;
+    color: #777777;
+    line-height: 1.45;
+}
+
+/* The dismiss button is its own sibling stElementContainer; pull it up */
+/* and overlay it on the banner's top-right via :has() + negative margin. */
+.value-banner-close {
+    height: 0;
+    overflow: hidden;
+}
+
+[data-testid="stElementContainer"]:has(> div > div > div > .value-banner-close) + [data-testid="stElementContainer"] {
+    position: relative;
+    width: 28px;
+    margin-left: auto;
+    margin-right: 6px;
+    margin-top: -92px;
+    margin-bottom: 64px;
+    z-index: 5;
+}
+
+[data-testid="stElementContainer"]:has(> div > div > div > .value-banner-close) + [data-testid="stElementContainer"] div.stButton > button {
+    width: 24px;
+    min-width: 24px;
+    height: 24px;
+    min-height: 24px;
+    padding: 0;
+    border-radius: 999px;
+    border: 0 !important;
+    background: transparent !important;
+    color: #b0b0b0;
+    font-size: 14px;
+    line-height: 1;
+    box-shadow: none !important;
+}
+
+[data-testid="stElementContainer"]:has(> div > div > div > .value-banner-close) + [data-testid="stElementContainer"] div.stButton > button:hover {
+    background: rgba(255, 45, 85, 0.08) !important;
+    color: #ff2d55;
+    border: 0 !important;
+}
+
+.album-rail-wrap {
+    margin: -2px 0 12px;
+}
+
+.album-rail-head {
+    margin: 0;
+    line-height: 1.2;
+}
+
+.album-rail-head h5 {
+    margin: 0 0 2px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #1f1f24;
+    letter-spacing: 0;
+}
+
+.album-rail-head span {
+    font-size: 10px;
+    color: #999999;
+}
+
+.album-rail-scroll {
+    margin: 0 -20px;
+    padding: 2px 20px 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.album-rail-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.album-rail {
+    display: flex;
+    gap: 8px;
+    width: max-content;
+}
+
+.album-rail-card {
+    flex: 0 0 auto;
+    width: 138px;
+    border-radius: 12px;
+    border: 1px solid #ffe0e4;
+    background:
+        radial-gradient(circle at 86% -4%, rgba(255, 215, 221, 0.7), transparent 50%),
+        linear-gradient(135deg, #fff7f8 0%, #ffffff 70%);
+    padding: 10px 12px 11px;
+    position: relative;
+    overflow: hidden;
+}
+
+.album-rail-card::before {
+    content: "◈";
+    position: absolute;
+    top: 9px;
+    right: 11px;
+    font-size: 11px;
+    color: #ff2d55;
+    opacity: 0.65;
+}
+
+.album-rail-card .rail-tag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    color: #ff2d55;
+    background: rgba(255, 45, 85, 0.10);
+    padding: 2px 6px;
+    border-radius: 999px;
+    margin-bottom: 7px;
+    letter-spacing: 0.3px;
+}
+
+.album-rail-card .rail-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #222222;
+    line-height: 1.25;
+    margin-bottom: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.album-rail-card .rail-meta {
+    font-size: 10px;
+    color: #888888;
+    line-height: 1.2;
+}
+
+.album-rail-head .rail-cta div.stButton > button {
+    min-height: 22px;
+    padding: 2px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 999px;
+    border: 1px solid #ffe0e4;
+    background: #ffffff;
+    color: #ff2d55;
+}
+
+.album-rail-head .rail-cta div.stButton > button:hover {
+    border-color: #ff2d55;
+    background: #ff2d55;
+    color: #ffffff;
 }
 
 .album-list {
@@ -636,28 +847,40 @@ footer {
 }
 
 .success-card-actions {
-    display: flex;
-    justify-content: flex-end;
-    margin: 0 0 6px;
+    height: 0;
+    overflow: hidden;
 }
 
-.success-card-actions div.stButton > button {
+/* Overlay the dismiss button onto the success card's top-right via */
+/* the same sibling-overlap technique used for the value-banner close. */
+[data-testid="stElementContainer"]:has(> div > div > div > .success-card-actions) + [data-testid="stElementContainer"] {
+    position: relative;
+    width: 30px;
+    margin-left: auto;
+    margin-right: 6px;
+    margin-top: 8px;
+    margin-bottom: -38px;
+    z-index: 5;
+}
+
+[data-testid="stElementContainer"]:has(> div > div > div > .success-card-actions) + [data-testid="stElementContainer"] div.stButton > button {
     width: 26px;
     min-width: 26px;
     height: 26px;
     min-height: 26px;
     padding: 0;
     border-radius: 999px;
-    border: 1px solid #eeeeee;
-    background: #ffffff;
+    border: 1px solid #eeeeee !important;
+    background: #ffffff !important;
     color: #999999;
     font-size: 13px;
+    box-shadow: none !important;
 }
 
-.success-card-actions div.stButton > button:hover {
-    border-color: #ff2d55;
+[data-testid="stElementContainer"]:has(> div > div > div > .success-card-actions) + [data-testid="stElementContainer"] div.stButton > button:hover {
+    border-color: #ff2d55 !important;
     color: #ff2d55;
-    background: #ffffff;
+    background: #ffffff !important;
 }
 
 .metric {
@@ -998,6 +1221,43 @@ div[data-testid="stFormSubmitButton"] > button:hover {
     border-color: #ff2d55;
 }
 
+.search-suggest {
+    margin: -6px 0 12px;
+}
+
+.search-suggest-label {
+    margin: 0 0 6px;
+    font-size: 10px;
+    color: #999999;
+    line-height: 1;
+}
+
+.search-suggest [data-testid="stHorizontalBlock"] {
+    gap: 6px;
+}
+
+.search-suggest div.stButton > button {
+    width: 100%;
+    min-height: 26px;
+    padding: 4px 9px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #555555;
+    background: #fafafa;
+    border: 1px solid #eeeeee;
+    border-radius: 999px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.search-suggest div.stButton > button:hover {
+    background: #fff7f8;
+    border-color: #ffb8c4;
+    color: #ff2d55;
+}
+
 .reason {
     border-left: 3px solid #ff2d55;
     background: #fff7f8;
@@ -1144,6 +1404,7 @@ def init_state() -> None:
         "theme_success_shown_at": None,
         "theme_success_theme": None,
         "theme_success_dismissed": False,
+        "value_banner_dismissed": False,
     }
     for key, value in defaults.items():
         st.session_state.setdefault(key, value)
@@ -1340,6 +1601,82 @@ def current_theme_config() -> dict:
     }
 
 
+def render_album_rail() -> None:
+    """笔记 tab 顶部的主题专辑轮播，使 AI 生成的价值持续可见。
+
+    仅在已生成至少一个专辑时展示，避免空状态占位。
+    点击“查看全部”跳转到专辑 tab，同时轮播卡本身作为体现 AI 成果的静态展示，
+    避免复杂点击跳转逻辑与 Streamlit 布局抵触。
+    """
+    ids = album_ids()
+    if not ids:
+        return
+
+    total = sum(ALBUM_NOTE_COUNTS.get(theme_id, 0) for theme_id in ids)
+
+    st.markdown('<div class="album-rail-wrap">', unsafe_allow_html=True)
+    head_left, head_right = st.columns([0.68, 0.32], vertical_alignment="center")
+    with head_left:
+        st.markdown(
+            f'<div class="album-rail-head">'
+            f'<h5>AI 整理的主题专辑</h5>'
+            f'<span>{len(ids)} 个专辑 · {total} 篇笔记</span>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+    with head_right:
+        st.markdown('<div class="rail-cta">', unsafe_allow_html=True)
+        if st.button("查看全部 ›", key="album_rail_view_all", use_container_width=True):
+            st.session_state.main_tab = "albums"
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    cards = []
+    for theme_id in ids:
+        config = theme_config_for(theme_id)
+        cards.append(
+            f'<div class="album-rail-card">'
+            f'<span class="rail-tag">AI 整理</span>'
+            f'<div class="rail-title">{escape(config["title"])}</div>'
+            f'<div class="rail-meta">{config["count"]} 篇 · {config["subtopic_count"]} 个子主题</div>'
+            f'</div>'
+        )
+    st.markdown(
+        f'<div class="album-rail-scroll"><div class="album-rail">{"".join(cards)}</div></div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+def render_value_banner() -> None:
+    """首页价值许诺型 banner，向面试官（首次进入的用户）传达产品核心价值。
+
+    设计考量：
+    - 使用价值许诺型文案，避免处于空收藏夹场景下讲“堆积”反而不合理
+    - 仅在笔记 tab 且未关闭过时展示，不污染主体路径
+    - 提供关闭按钮，体现对用户控制感的尊重。
+    """
+    if st.session_state.value_banner_dismissed:
+        return
+
+    st.markdown('<div class="value-banner-wrap">', unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div class="value-banner">
+            <h4>让你的收藏变成能上手的方案</h4>
+            <p>AI 帮你把杂乱的笔记整理成可执行的主题灵感库</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown('<div class="value-banner-close">', unsafe_allow_html=True)
+    if st.button("×", key="dismiss_value_banner"):
+        st.session_state.value_banner_dismissed = True
+        st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
 def render_ai_prompt() -> None:
     prompt_index = st.session_state.ai_prompt_index
     if prompt_index >= len(AI_PROMPTS):
@@ -1407,6 +1744,8 @@ def render_default_page() -> None:
     if st.session_state.main_tab == "albums":
         render_albums_page()
     else:
+        render_value_banner()
+        render_album_rail()
         render_ai_prompt()
 
         st.markdown(
@@ -1482,7 +1821,27 @@ def filtered_by_subtopic(posts: list[dict]) -> list[dict]:
     return [post for post in posts if active in post["subtopics"]]
 
 
+SEARCH_SUGGESTIONS = [
+    "洗衣机上面怎么利用？",
+    "不打孔上墙有什么办法",
+    "小空间工位怎么布置",
+]
+
+
 def render_search() -> list[dict] | None:
+    """主题页搜索区。
+
+    除输入框外提供 3 个推荐问句 chip，点击后直接填充并触发搜索。
+    设计考量：
+    - 推荐问句为 AI 预测的“用户可能想问”，增强产品智能感
+    - 避免面试官随手输入不及模糊匹配范围的 query 导致空结果
+    - chip 底色差于主色，默认灰调，hover 才点亮品牌色，不与主 CTA 争夺注意力
+    """
+    pending_query = st.session_state.pop("_pending_search", None)
+    if pending_query is not None:
+        st.session_state.last_search = pending_query
+        st.session_state.search_query = pending_query
+
     st.markdown('<div class="search-box">', unsafe_allow_html=True)
     with st.form("search_form", clear_on_submit=False, border=False):
         input_col, button_col = st.columns([0.86, 0.14])
@@ -1497,6 +1856,19 @@ def render_search() -> list[dict] | None:
             submitted = st.form_submit_button("⌕", use_container_width=True)
         if submitted:
             st.session_state.last_search = query
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown(
+        '<div class="search-suggest">'
+        '<p class="search-suggest-label">你可能想问</p>',
+        unsafe_allow_html=True,
+    )
+    suggest_cols = st.columns(len(SEARCH_SUGGESTIONS))
+    for idx, suggestion in enumerate(SEARCH_SUGGESTIONS):
+        with suggest_cols[idx]:
+            if st.button(suggestion, key=f"suggest_{idx}", use_container_width=True):
+                st.session_state._pending_search = suggestion
+                st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 
     if st.session_state.last_search.strip():
