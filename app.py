@@ -420,6 +420,92 @@ footer {
     line-height: 1.2;
 }
 
+.value-banner-wrap {
+    margin: 4px 0 14px;
+    position: relative;
+}
+
+.value-banner {
+    position: relative;
+    border-radius: 14px;
+    padding: 12px 38px 12px 46px;
+    background:
+        radial-gradient(circle at 88% -10%, rgba(255, 215, 221, 0.95), transparent 55%),
+        linear-gradient(135deg, #fff4f6 0%, #ffffff 78%);
+    border: 1px solid #ffe0e4;
+    box-shadow: 0 6px 16px rgba(255, 45, 85, 0.06);
+    overflow: hidden;
+}
+
+.value-banner::before {
+    content: "✨";
+    position: absolute;
+    left: 14px;
+    top: 13px;
+    width: 22px;
+    height: 22px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: #ff2d55;
+    color: #ffffff;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.value-banner h4 {
+    margin: 0 0 3px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #1f1f24;
+    line-height: 1.3;
+}
+
+.value-banner p {
+    margin: 0;
+    font-size: 11px;
+    color: #777777;
+    line-height: 1.45;
+}
+
+/* The dismiss button is its own sibling stElementContainer; pull it up */
+/* and overlay it on the banner's top-right via :has() + negative margin. */
+.value-banner-close {
+    height: 0;
+    overflow: hidden;
+}
+
+[data-testid="stElementContainer"]:has(> div > div > div > .value-banner-close) + [data-testid="stElementContainer"] {
+    position: relative;
+    width: 28px;
+    margin-left: auto;
+    margin-right: 6px;
+    margin-top: -92px;
+    margin-bottom: 64px;
+    z-index: 5;
+}
+
+[data-testid="stElementContainer"]:has(> div > div > div > .value-banner-close) + [data-testid="stElementContainer"] div.stButton > button {
+    width: 24px;
+    min-width: 24px;
+    height: 24px;
+    min-height: 24px;
+    padding: 0;
+    border-radius: 999px;
+    border: 0 !important;
+    background: transparent !important;
+    color: #b0b0b0;
+    font-size: 14px;
+    line-height: 1;
+    box-shadow: none !important;
+}
+
+[data-testid="stElementContainer"]:has(> div > div > div > .value-banner-close) + [data-testid="stElementContainer"] div.stButton > button:hover {
+    background: rgba(255, 45, 85, 0.08) !important;
+    color: #ff2d55;
+    border: 0 !important;
+}
+
 .album-list {
     display: grid;
     gap: 10px;
@@ -1172,6 +1258,7 @@ def init_state() -> None:
         "theme_success_shown_at": None,
         "theme_success_theme": None,
         "theme_success_dismissed": False,
+        "value_banner_dismissed": False,
     }
     for key, value in defaults.items():
         st.session_state.setdefault(key, value)
@@ -1368,6 +1455,35 @@ def current_theme_config() -> dict:
     }
 
 
+def render_value_banner() -> None:
+    """首页价值许诺型 banner，向面试官（首次进入的用户）传达产品核心价值。
+
+    设计考量：
+    - 使用价值许诺型文案，避免处于空收藏夹场景下讲“堆积”反而不合理
+    - 仅在笔记 tab 且未关闭过时展示，不污染主体路径
+    - 提供关闭按钮，体现对用户控制感的尊重。
+    """
+    if st.session_state.value_banner_dismissed:
+        return
+
+    st.markdown('<div class="value-banner-wrap">', unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div class="value-banner">
+            <h4>让你的收藏变成能上手的方案</h4>
+            <p>AI 帮你把杂乱的笔记整理成可执行的主题灵感库</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown('<div class="value-banner-close">', unsafe_allow_html=True)
+    if st.button("×", key="dismiss_value_banner"):
+        st.session_state.value_banner_dismissed = True
+        st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
 def render_ai_prompt() -> None:
     prompt_index = st.session_state.ai_prompt_index
     if prompt_index >= len(AI_PROMPTS):
@@ -1435,6 +1551,7 @@ def render_default_page() -> None:
     if st.session_state.main_tab == "albums":
         render_albums_page()
     else:
+        render_value_banner()
         render_ai_prompt()
 
         st.markdown(
