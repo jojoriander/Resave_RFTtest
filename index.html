@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>收藏夹大脑</title>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ── */
+:root {
+  --red: #FF2442;
+  --red-light: #fff0f2;
+  --red-mid: #ffe0e4;
+  --bg: #f5f5f5;
+  --surface: #ffffff;
+  --surface-2: #fafafa;
+  --border: rgba(0,0,0,0.08);
+  --text: #1a1a1a;
+  --text-muted: #888;
+  --text-faint: #bbb;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --ease: cubic-bezier(0.16,1,0.3,1);
+  --font: 'Satoshi', -apple-system, 'PingFang SC', sans-serif;
+}
+/* ── RESET ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:none;text-size-adjust:none}
+body{
+  font-family:var(--font);
+  background:#f5f0eb;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  padding:40px 20px;
+}
+
+.demo-label{
+  font-size:12px;
+  color:#b0a89e;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  margin-bottom:28px;
+  font-weight:500;
+}
+.demo-tagline{
+  margin-top:32px;
+  font-size:13px;
+  color:#c0b8b0;
+  letter-spacing:.03em;
+}
+img,svg{display:block;max-width:100%}
+button{cursor:pointer;border:none;background:none;font:inherit;color:inherit}
+input{font:inherit;color:inherit}
+
+/* ── PHONE SHELL ── */
+.phone {
+  width: min(393px, calc(100vw - 40px));
+  height: min(852px, calc(100vh - 130px));
+  min-height: 640px;
+  max-height: 852px;
+  background: var(--bg);
+  border-radius: 48px;
+  box-shadow:
+    0 0 0 14px #1a1a1a,
+    0 0 0 15px rgba(255,255,255,0.06),
+    0 40px 100px rgba(0,0,0,0.32),
+    0 15px 40px rgba(0,0,0,0.22);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Dynamic Island */
+.phone::before {
+  content: '';
+  position: absolute;
+  top: 12px; left: 50%;
+  transform: translateX(-50%);
+  width: 118px; height: 34px;
+  background: #111;
+  border-radius: 20px;
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* iPhone home indicator */
+.phone::after {
+  content: '';
+  position: absolute;
+  bottom: 10px; left: 50%;
+  transform: translateX(-50%);
+  width: 126px; height: 5px;
+  background: rgba(0,0,0,0.18);
+  border-radius: 3px;
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* ── STATUS BAR ── */
+.status-bar {
+  height: 44px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 20px 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  flex-shrink: 0;
+}
+.status-bar .time { margin-left: 28px; }
+.status-bar .icons { display: flex; gap: 6px; align-items: center; font-size: 10px; }
+
+/* ── NAV HEADER ── */
+.nav-header {
+  padding: 10px 16px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg);
+  flex-shrink: 0;
+}
+.nav-header .title { font-size: 17px; font-weight: 700; }
+.nav-header .subtitle { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+.nav-icon-btn {
+  width: 32px; height: 32px;
+  border-radius: var(--radius-full);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted);
+  transition: background 120ms;
+}
+.nav-icon-btn:hover { background: var(--bg); }
+
+/* ── SCROLLABLE CONTENT ── */
+.page-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.page-content::-webkit-scrollbar { display: none; }
+
+/* ── TAB BAR ── */
+.tab-bar {
+  display: flex;
+  padding: 0 16px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.tab-btn {
+  flex: 1;
+  padding: 10px 0 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-align: center;
+  position: relative;
+  transition: color 150ms;
+}
+.tab-btn.active { color: var(--red); font-weight: 700; }
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 20%; right: 20%;
+  height: 2px;
+  background: var(--red);
+  border-radius: 2px 2px 0 0;
+}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 0 8px;
+  flex-shrink: 0;
+}
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 0;
+  color: var(--text-faint);
+  font-size: 10px;
+  transition: color 150ms;
+}
+.bottom-nav-item.active { color: var(--red); }
+.bottom-nav-icon { font-size: 20px; line-height: 1; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── AI BANNER / SUGGESTION ── */
+.ai-suggestion {
+  margin: 10px 12px 0;
+  background: linear-gradient(135deg, #fff5f6 0%, #fff0f3 100%);
+  border: 1px solid var(--red-mid);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  position: relative;
+}
+.ai-suggestion .ai-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.ai-badge {
+  background: var(--red);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.3px;
+}
+.ai-suggestion .ai-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+.ai-suggestion .ai-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.ai-actions {
+  display: flex;
+  gap: 8px;
+}
+.btn-primary {
+  flex: 1;
+  height: 34px;
+  background: var(--red);
+  color: #fff;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 600;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  transition: opacity 150ms, transform 100ms;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-primary:active { opacity: 0.85; transform: scale(0.98); }
+.btn-ghost {
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  color: var(--text-muted);
+  background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 150ms;
+}
+.btn-ghost:active { background: var(--bg); }
+
+/* ── POSTS GRID ── */
+.posts-grid {
+  padding: 10px 12px 12px;
+  columns: 2;
+  column-gap: 8px;
+}
+.post-card {
+  break-inside: avoid;
+  margin-bottom: 8px;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform 150ms var(--ease), box-shadow 150ms;
+  -webkit-tap-highlight-color: transparent;
+  display: block;
+}
+.post-card:active { transform: scale(0.97); box-shadow: none; }
+.post-cover {
+  width: 100%;
+  aspect-ratio: 3/4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.4;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.post-cover-label {
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.post-info { padding: 8px 8px 10px; }
+.post-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 6px;
+  min-height: 33px;
+}
+.post-author {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.post-author::before {
+  content: '';
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.notes-list-hint {
+  break-inside: avoid;
+  column-span: all;
+  padding: 18px 8px 8px;
+  text-align: center;
+  color: var(--text-faint);
+}
+.notes-list-hint-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.notes-list-hint-sub {
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* ── ALBUM CARD ── */
+.album-card {
+  margin: 8px 12px 0;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform 150ms var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.album-card:active { transform: scale(0.98); }
+.album-cover-strip {
+  height: 80px;
+  display: flex;
+  overflow: hidden;
+}
+.album-cover-strip > div {
+  flex: 1;
+}
+.album-card-body {
+  padding: 10px 12px 12px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.album-card-info {}
+.album-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+.album-card-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.album-ai-tag {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--red);
+  background: var(--red-light);
+  border: 1px solid var(--red-mid);
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: 8px;
+  margin-top: 2px;
+}
+
+/* ── THEME PAGE ── */
+.theme-header {
+  position: relative;
+  padding: 14px 14px 10px;
+  background: var(--bg);
+  user-select: none;
+  -webkit-user-select: none;
+}
+.theme-title-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+.theme-title-main {
+  min-width: 0;
+  flex: 1;
+}
+.theme-back-icon-btn {
+  width: 36px;
+  height: 36px;
+  margin-left: -6px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 500;
+  pointer-events: auto;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.theme-back-icon-btn:hover { background: var(--surface-2); }
+.theme-back-icon-btn:active { color: var(--text); background: var(--surface-2); transform: scale(0.96); }
+.theme-back-icon-btn svg { width:18px;height:18px; }
+.theme-search-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 500;
+  pointer-events: auto;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.theme-search-btn:hover,
+.theme-search-btn.active { background: var(--surface-2); color: var(--text); }
+.theme-search-btn:active { transform: scale(0.96); }
+.theme-search-btn svg { width:18px;height:18px; }
+.theme-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+.theme-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ── AI SUMMARY BOX ── */
+.ai-summary-box {
+  margin: 10px 12px 0;
+  background: linear-gradient(135deg, #fff8f8 0%, #fff5f6 100%);
+  border: 1px solid var(--red-mid);
+  border-radius: var(--radius-md);
+  padding: 12px;
+}
+.ai-summary-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.ai-summary-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+.ai-summary-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 10px;
+}
+.ai-actions-list {
+  border-top: 1px solid var(--red-mid);
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ai-action-item {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.5;
+}
+.ai-action-num {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--red);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── SUBTOPIC CHIPS ── */
+.chips-row {
+  display: flex;
+  gap: 6px;
+  padding: 10px 12px 4px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  flex-shrink: 0;
+  cursor: grab;
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.chips-row::-webkit-scrollbar { display: none; }
+.chips-row.dragging {
+  cursor: grabbing;
+  scroll-behavior: auto;
+}
+.chip {
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 150ms;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.chip.active {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+
+/* ── SEARCH ── */
+.search-container {
+  padding: 10px 12px 6px;
+}
+.search-box {
+  display: flex;
+  align-items: center;
+  background: var(--bg);
+  border-radius: var(--radius-full);
+  padding: 0 12px;
+  gap: 8px;
+  border: 1.5px solid transparent;
+  transition: border-color 150ms, background 150ms;
+}
+.search-box:focus-within {
+  background: var(--surface);
+  border-color: var(--red);
+}
+.search-box svg { color: var(--text-faint); flex-shrink: 0; }
+.search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  height: 36px;
+  font-size: 13px;
+  outline: none;
+}
+.search-input::placeholder { color: var(--text-faint); }
+.search-suggestions {
+  display: flex;
+  gap: 6px;
+  padding: 6px 12px 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.search-suggestions::-webkit-scrollbar { display: none; }
+.suggestion-chip {
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 150ms;
+}
+.suggestion-chip:active { background: var(--red-light); border-color: var(--red-mid); color: var(--red); }
+
+/* ── SEARCH RESULTS ── */
+.search-result-card {
+  margin: 0 12px 8px;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  box-shadow: var(--shadow-sm);
+  border-left: 3px solid transparent;
+}
+.search-result-card.matched { border-left-color: var(--red); }
+.search-result-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.search-result-snippet { font-size: 11px; color: var(--text-muted); line-height: 1.5; margin-bottom: 5px; }
+.search-match-reason {
+  font-size: 11px;
+  color: var(--red);
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+/* ── LOADING OVERLAY ── */
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.95);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 200;
+  border-radius: 44px;
+  backdrop-filter: blur(4px);
+}
+.loading-spinner {
+  width: 48px; height: 48px;
+  border: 3px solid var(--red-mid);
+  border-top-color: var(--red);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 14px; font-weight: 600; color: var(--text); }
+.loading-sub { font-size: 12px; color: var(--text-muted); }
+.loading-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: center;
+}
+.loading-step {
+  font-size: 12px;
+  color: var(--text-faint);
+  opacity: 0;
+  transition: opacity 300ms, color 300ms;
+}
+.loading-step.visible { opacity: 1; }
+.loading-step.done { color: var(--red); }
+
+/* ── TOAST ── */
+.toast {
+  position: absolute;
+  top: 54px; left: 12px; right: 12px;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+  z-index: 300;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  transform: translateY(-8px);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 300ms var(--ease), opacity 300ms;
+  cursor: default;
+}
+.toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
+.toast.actionable { cursor: pointer; }
+.toast.actionable:active { transform: translateY(0) scale(0.98); }
+.toast-icon { font-size: 20px; flex-shrink: 0; line-height: 1; margin-top: 1px; }
+.toast-body { flex: 1; min-width: 0; }
+.toast-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.toast-sub { font-size: 11px; color: var(--text-muted); }
+.toast-cta {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--red);
+  margin-top: 4px;
+}
+
+/* ── WELCOME MODAL ── */
+.modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 400;
+  display: flex;
+  align-items: flex-end;
+  border-radius: 44px;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 250ms;
+}
+.modal-overlay.show { opacity: 1; }
+.modal-sheet {
+  width: 100%;
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  padding: 20px 20px 32px;
+  transform: translateY(100%);
+  transition: transform 350ms var(--ease);
+}
+.modal-overlay.show .modal-sheet { transform: translateY(0); }
+.modal-handle {
+  width: 36px; height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+.modal-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.modal-sub { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px; }
+.modal-stat-row {
+  display: flex; gap: 8px; margin-bottom: 16px;
+}
+.modal-stat {
+  flex: 1;
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  padding: 12px 10px;
+  text-align: center;
+}
+.modal-stat-num { font-size: 22px; font-weight: 700; color: var(--red); line-height: 1; }
+.modal-stat-label { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+.modal-cta {
+  width: 100%; height: 44px;
+  background: var(--red);
+  color: #fff;
+  border-radius: var(--radius-full);
+  font-size: 15px;
+  font-weight: 700;
+  transition: opacity 150ms;
+}
+.modal-cta:active { opacity: 0.85; }
+
+/* ── EMPTY STATE ── */
+.empty-albums {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-faint);
+}
+.empty-albums .emoji { font-size: 36px; margin-bottom: 10px; }
+.empty-albums p { font-size: 13px; }
+
+/* ── SECTION LABEL ── */
+.section-label {
+  padding: 12px 14px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.3px;
+}
+
+/* PAGE TRANSITIONS */
+.page-screen {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+.page-screen.active {
+  display: flex;
+}
+
+/* ── SCROLL AREAS within pages ── */
+.scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.scroll-area::-webkit-scrollbar { display: none; }
+
+@media (max-width: 520px) {
+  body { padding: 18px 10px; justify-content:flex-start; }
+  .demo-label { margin-bottom: 20px; }
+  .demo-tagline { margin-top: 22px; }
+  .phone {
+    width: min(393px, calc(100vw - 28px));
+    height: calc(100vh - 96px);
+    min-height: 640px;
+    border-radius: 44px;
+    box-shadow:
+      0 0 0 8px #1a1a1a,
+      0 22px 60px rgba(0,0,0,0.28);
+  }
+}
+
+</style>
+</head>
+<body>
+
+<p class="demo-label">Product Demo &nbsp;·&nbsp; Resave</p>
+
+<div class="phone" id="phone">
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <span class="time" id="clock">9:41</span>
+    <div class="icons">
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="3" width="3" height="9" rx="1" opacity="0.3"/><rect x="4" y="2" width="3" height="10" rx="1" opacity="0.5"/><rect x="8" y="1" width="3" height="11" rx="1" opacity="0.8"/><rect x="12" y="0" width="3" height="12" rx="1"/></svg>
+      <svg width="16" height="12" viewBox="0 0 20 14" fill="currentColor"><path d="M10 2.5C12.8 2.5 15.3 3.7 17 5.7L18.5 4.2C16.4 1.9 13.4 0.5 10 0.5C6.6 0.5 3.6 1.9 1.5 4.2L3 5.7C4.7 3.7 7.2 2.5 10 2.5Z" opacity="0.4"/><path d="M10 6.5C11.9 6.5 13.6 7.3 14.8 8.6L16.3 7.1C14.7 5.5 12.5 4.5 10 4.5C7.5 4.5 5.3 5.5 3.7 7.1L5.2 8.6C6.4 7.3 8.1 6.5 10 6.5Z" opacity="0.7"/><circle cx="10" cy="12" r="2"/></svg>
+      <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="0.5" width="22" height="11" rx="3.5" stroke="currentColor" stroke-opacity="0.35"/><rect x="2" y="2" width="18" height="8" rx="2" fill="currentColor"/><path d="M23.5 4.5V7.5C24.3 7.2 24.3 4.8 23.5 4.5Z" fill="currentColor" opacity="0.4"/></svg>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SCREEN 1: HOME (收藏夹)                 -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="page-screen active" id="screen-home">
+    <!-- Header -->
+    <div class="nav-header">
+      <div>
+        <div class="title">我的收藏</div>
+        <div class="subtitle" id="home-subtitle">共收藏 <span id="total-count">486</span> 篇笔记</div>
+      </div>
+      <button class="nav-icon-btn" aria-label="搜索">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="notes" onclick="switchHomeTab('notes', this)">笔记</button>
+      <button class="tab-btn" data-tab="albums" onclick="switchHomeTab('albums', this)">专辑</button>
+    </div>
+
+    <!-- Notes Tab Content -->
+    <div id="home-notes-tab" class="scroll-area">
+      <!-- AI Suggestion -->
+      <div class="ai-suggestion" id="ai-suggestion-card">
+        <div class="ai-header">
+          <span class="ai-badge">AI 发现</span>
+          <span style="font-size:11px;color:var(--text-muted)">最近 3 天</span>
+        </div>
+        <div class="ai-title">你收藏了 37 篇「租房/小空间改造」相关笔记 ✨</div>
+        <div class="ai-meta">床底收纳、不打孔方案、小空间工位…可以帮你整理成一个专辑</div>
+        <div class="ai-actions">
+          <button class="btn-primary" onclick="startOrganize()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            帮我整理
+          </button>
+          <button class="btn-ghost" onclick="dismissSuggestion()">不用了</button>
+        </div>
+      </div>
+
+      <!-- Posts Grid -->
+      <div class="section-label" id="home-notes-label">未分类笔记 (486)</div>
+      <div class="posts-grid" id="home-posts-grid"></div>
+    </div>
+
+    <!-- Albums Tab Content -->
+    <div id="home-albums-tab" class="scroll-area" style="display:none">
+      <div id="albums-list"></div>
+      <div class="empty-albums" id="albums-empty">
+        <div class="emoji">📁</div>
+        <p>还没有专辑<br>可以让 AI 帮你整理笔记 ✨</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- SCREEN 2: ALBUM DETAIL                  -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="page-screen" id="screen-album">
+    <!-- Header -->
+    <div class="theme-header">
+      <div class="theme-title-row">
+        <button class="theme-back-icon-btn" id="album-back-btn" type="button" aria-label="返回专辑列表" onclick="goBack(); return false;" ontouchend="goBack(); return false;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="theme-title-main">
+          <div class="theme-title" id="album-title">小空间改造灵感</div>
+          <div class="theme-meta" id="album-meta">37 篇笔记 · AI 整理</div>
+        </div>
+        <button class="theme-search-btn" id="album-search-btn" type="button" aria-label="搜索这个专辑" onclick="toggleSearchFromButton(event); return false;" ontouchend="toggleSearchFromButton(event); return false;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7.5"/><path d="m20 20-3.8-3.8"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="scroll-area">
+      <!-- AI Summary -->
+      <div class="ai-summary-box">
+        <div class="ai-summary-header">
+          <span class="ai-badge">AI 总结</span>
+          <span class="ai-summary-title">本专辑笔记内容</span>
+        </div>
+        <div class="ai-summary-text" id="album-summary-text">
+          这 37 篇笔记集中在出租屋收纳和小空间改造场景，核心是「不改硬装、可复原、低预算」。最常出现的方案是床底收纳箱、伸缩置物架和折叠桌，适合先从床底和洗衣机上方开始执行。
+        </div>
+        <div class="ai-actions-list" id="album-actions-list">
+          <div class="ai-action-item">
+            <div class="ai-action-num">1</div>
+            <span>先清出床底，用透明收纳箱存放换季衣物，释放衣柜空间</span>
+          </div>
+          <div class="ai-action-item">
+            <div class="ai-action-num">2</div>
+            <span>洗衣机上方加伸缩置物架，集中放洗护用品</span>
+          </div>
+          <div class="ai-action-item">
+            <div class="ai-action-num">3</div>
+            <span>窗边用折叠桌做临时工位，不用时收起不占面积</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subtopic Chips -->
+      <div class="chips-row" id="subtopic-chips"></div>
+
+      <!-- Search -->
+      <div class="search-container" id="album-search-container" style="display:none">
+        <div class="search-box">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input class="search-input" id="search-input" type="text" placeholder="搜索这个专辑里的笔记…" oninput="handleSearch(this.value)">
+        </div>
+        <div class="search-suggestions">
+          <span class="suggestion-chip" onclick="fillSearch('洗衣机上面怎么利用')">洗衣机上面怎么利用</span>
+          <span class="suggestion-chip" onclick="fillSearch('不打孔方案')">不打孔方案</span>
+          <span class="suggestion-chip" onclick="fillSearch('小空间工位')">小空间工位</span>
+        </div>
+      </div>
+
+      <!-- Search Results -->
+      <div id="search-results" style="padding-top:4px; display:none"></div>
+
+      <!-- Album Posts Grid -->
+      <div class="posts-grid" id="album-posts-grid"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV (Home only) -->
+  <div class="bottom-nav" id="home-bottom-nav">
+    <div class="bottom-nav-item">
+      <div class="bottom-nav-icon">🏠</div>
+      <span>首页</span>
+    </div>
+    <div class="bottom-nav-item">
+      <div class="bottom-nav-icon">🔍</div>
+      <span>发现</span>
+    </div>
+    <div class="bottom-nav-item">
+      <div class="bottom-nav-icon" style="font-size:24px;color:var(--red)">⊕</div>
+      <span></span>
+    </div>
+    <div class="bottom-nav-item active">
+      <div class="bottom-nav-icon">🗂️</div>
+      <span>收藏</span>
+    </div>
+    <div class="bottom-nav-item">
+      <div class="bottom-nav-icon">👤</div>
+      <span>我</span>
+    </div>
+  </div>
+
+  <!-- LOADING OVERLAY -->
+  <div class="loading-overlay" id="loading-overlay" style="display:none">
+    <div class="loading-spinner"></div>
+    <div class="loading-steps">
+      <div class="loading-text">AI 正在整理中…</div>
+      <div class="loading-step" id="step-1">📖 读取收藏笔记内容</div>
+      <div class="loading-step" id="step-2">🏷️ 识别主题与关键词</div>
+      <div class="loading-step" id="step-3">✨ 聚类生成专辑分组</div>
+      <div class="loading-step" id="step-4">📝 生成 AI 总结和行动建议</div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast" aria-live="polite">
+    <div class="toast-icon">✅</div>
+    <div class="toast-body">
+      <div class="toast-title" id="toast-title">整理完成</div>
+      <div class="toast-sub" id="toast-sub">已从你的收藏中整理出 37 篇笔记</div>
+      <div class="toast-cta" id="toast-cta" style="display:none">点击查看专辑</div>
+    </div>
+  </div>
+
+  <!-- WELCOME MODAL -->
+  <div class="modal-overlay" id="welcome-modal" style="display:none">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">✨ 收藏夹大脑</div>
+      <div class="modal-sub">你有 486 篇收藏，其中大部分收藏后再也没打开过。AI 可以帮你整理、分类、总结，让收藏真正有价值。</div>
+      <div class="modal-stat-row">
+        <div class="modal-stat">
+          <div class="modal-stat-num">486</div>
+          <div class="modal-stat-label">总收藏数</div>
+        </div>
+        <div class="modal-stat">
+          <div class="modal-stat-num">73%</div>
+          <div class="modal-stat-label">收藏后未再打开</div>
+        </div>
+        <div class="modal-stat">
+          <div class="modal-stat-num">0</div>
+          <div class="modal-stat-label">已整理专辑</div>
+        </div>
+      </div>
+      <button class="modal-cta" onclick="closeModal()">开始体验</button>
+    </div>
+  </div>
+
+</div><!-- /phone -->
+
+<p class="demo-tagline">收藏夹 AI 整理助手 · 产品原型</p>
+
+<script>
+// ═══════════════════════════
+// DATA
+// ═══════════════════════════
+const DEFAULT_IDS = ['rent_001','rent_002','beauty_001','rent_003','food_001','rent_004','rent_005','fashion_001','rent_006','study_001','rent_007','city_001'];
+const TOTAL_FAVORITES = 486;
+const ORGANIZED_COUNT = 37;
+const UNCLASSIFIED_COUNT = TOTAL_FAVORITES - ORGANIZED_COUNT;
+const SUBTOPICS = ['全部','床底收纳','不打孔上墙','小空间工位','洗衣机上方','低预算软装','出租屋避坑'];
+
+const COVER_COLORS = [
+  ['#c0392b','#e74c3c'],['#27ae60','#2ecc71'],['#2980b9','#3498db'],
+  ['#8e44ad','#9b59b6'],['#d35400','#e67e22'],['#16a085','#1abc9c'],
+  ['#2c3e50','#34495e'],['#7f8c8d','#95a5a6'],
+];
+
+const POSTS_DATA = {
+  rent_001:{title:"9平米出租屋住了一年的样子",cover:"9m2 / 不钉墙 / 慢慢变舒服",author:"小盒子住在北方",tags:["出租屋","小户型","床底收纳"],subtopics:["床底收纳","小空间工位","低预算软装"],content:"用床底收纳箱、窄边小推车和折叠桌，把9平米出租屋分成睡眠区、临时工位和换衣角。",memory:["9平米","床底箱","折叠桌","出租屋分区"]},
+  rent_002:{title:"租来的房子，也想认真过生活",cover:"低预算软装清单",author:"米粒的房间",tags:["出租屋改造","软装","生活感"],subtopics:["低预算软装"],content:"用可拆窗帘、床品、地毯和暖光台灯改变出租屋氛围，不碰硬装也能提升生活感。",memory:["暖光台灯","可拆窗帘","地毯","软装"]},
+  rent_003:{title:"小房间不打孔收纳方案",cover:"房东不让钉墙也能上墙",author:"不打孔研究所",tags:["不打孔","收纳","免钉胶"],subtopics:["不打孔上墙","出租屋避坑"],content:"免钉胶挂钩、伸缩杆、门后挂袋和轻量洞洞板，可以收纳包包、帽子和日用品。",memory:["免钉胶","伸缩杆","门后挂袋","洞洞板"]},
+  rent_004:{title:"打工人卧室改造清单",cover:"周末一天就能做完",author:"周末改房间",tags:["卧室改造","打工人","低预算"],subtopics:["床底收纳","小空间工位","低预算软装"],content:"改造从断舍离开始，再加床底箱、折叠桌、夹缝柜和桌面收纳盒，预算控制在600元以内。",memory:["600元","夹缝柜","折叠桌","桌面收纳"]},
+  rent_005:{title:"洗衣机上方空间利用",cover:"别再空着了",author:"阿圆的阳台",tags:["洗衣机上方","置物架","小户型"],subtopics:["洗衣机上方","不打孔上墙"],content:"洗衣机上方用伸缩置物架、窄洞洞板和收纳篮，能放洗衣液、纸巾和护肤品。",memory:["洗衣机上方","置物架","洞洞板","护肤台"]},
+  rent_006:{title:"床底收纳真的救命",cover:"换季衣服终于有地方放",author:"小鹿会整理",tags:["床底收纳","换季","出租屋"],subtopics:["床底收纳"],content:"透明床底箱适合放换季衣物，被子用压缩袋，常用物品放带轮抽屉箱，拿取更方便。",memory:["透明床底箱","压缩袋","带轮抽屉"]},
+  rent_007:{title:"低预算软装让出租屋变温柔",cover:"300元氛围感改造",author:"温柔房间计划",tags:["软装","低预算","出租屋"],subtopics:["低预算软装"],content:"只换床品、灯泡、桌布和画芯，保留原家具，搬家时也都能带走。",memory:["300元","床品","灯泡","画芯"]},
+  rent_008:{title:"房东不让钉墙也能收纳",cover:"免钉挂钩实测",author:"租房避坑局",tags:["免钉胶","避坑","不打孔"],subtopics:["不打孔上墙","出租屋避坑"],content:"对比了免钉胶、无痕钉和真空吸盘，轻物可以用免钉胶，重物建议落地架更稳。",memory:["免钉胶","无痕钉","承重","落地架"]},
+  rent_009:{title:"这几个角落真的别浪费",cover:"夹缝、床边、门后",author:"角落改造师",tags:["夹缝收纳","门后收纳","小户型"],subtopics:["不打孔上墙","床底收纳"],content:"冰箱旁夹缝柜、床边窄推车、门后挂篮都能吃掉零碎物品，不用改造硬装。",memory:["夹缝柜","窄推车","门后挂篮"]},
+  rent_010:{title:"窗边30cm也能做工位",cover:"折叠桌 + 窄书架",author:"下班后也要学习",tags:["小空间工位","折叠桌","窗边"],subtopics:["小空间工位","低预算软装"],content:"窗边用壁靠折叠桌、窄书架和夹灯，白天办公晚上收起，不影响走动。",memory:["窗边30cm","折叠桌","窄书架","夹灯"]},
+  rent_011:{title:"9㎡也能有客厅感",cover:"地毯一铺就变了",author:"小房间日记",tags:["9㎡","软装","出租屋"],subtopics:["低预算软装"],content:"用地毯划出休息区，床尾放小边几和落地灯，小房间也能有像客厅一样的角落。",memory:["地毯","床尾","边几","落地灯"]},
+  rent_012:{title:"出租屋卫生间别买错",cover:"这些免钉件会掉",author:"租房少踩坑",tags:["出租屋避坑","卫生间收纳","免钉"],subtopics:["出租屋避坑","不打孔上墙"],content:"潮湿卫生间里免钉胶容易失效，浴室收纳优先用落地置物架和挂门架。",memory:["卫生间","免钉胶失效","落地置物架"]},
+  rent_013:{title:"小推车到底放哪最顺手",cover:"床边/厨房/洗衣机旁",author:"推车爱好者",tags:["小推车","收纳","洗衣机旁"],subtopics:["洗衣机上方","床底收纳"],content:"小推车适合放在床边当床头柜、厨房放调料、洗衣机旁放洗衣液和脏衣篮。",memory:["小推车","床头柜","洗衣液","脏衣篮"]},
+  rent_014:{title:"洞洞板别乱买，先看这篇",cover:"承重和安装方式",author:"收纳工具测评",tags:["洞洞板","不打孔","桌面收纳"],subtopics:["不打孔上墙","小空间工位","出租屋避坑"],content:"桌面洞洞板适合文具和护肤品，墙面洞洞板要看承重，租房建议选落地或夹桌款。",memory:["洞洞板","护肤品","夹桌款","承重"]},
+  rent_015:{title:"洗衣机上面做护肤台，真香",cover:"小卫生间也能放下",author:"早八也要精致",tags:["洗衣机上方","护肤台","小卫生间"],subtopics:["洗衣机上方","不打孔上墙"],content:"在洗衣机上方加窄层板和收纳盒，护肤品按早晚分层，吹风机挂在侧边。",memory:["洗衣机上面","护肤台","窄层板","吹风机"]},
+  rent_016:{title:"衣柜太小，我这样续命",cover:"换季衣物藏起来",author:"衣柜整理中",tags:["衣柜收纳","床底收纳","换季"],subtopics:["床底收纳","不打孔上墙"],content:"衣柜不够时，先把换季衣物压缩进床底，再用挂袋增加竖向容量。",memory:["衣柜太小","压缩袋","床底","挂袋"]},
+  rent_017:{title:"出租屋灯光一换，像搬了家",cover:"别用惨白吸顶灯",author:"灯光改造课代表",tags:["灯光","软装","出租屋"],subtopics:["低预算软装","小空间工位"],content:"用暖光灯泡、床头夹灯和落地灯，让出租屋夜晚更舒服，所有灯具都能搬走。",memory:["暖光灯泡","夹灯","落地灯","搬走"]},
+  rent_018:{title:"折叠桌救了我的小卧室",cover:"不用时收起来",author:"临时工位也认真",tags:["折叠桌","小空间工位","出租屋"],subtopics:["小空间工位","低预算软装"],content:"小卧室无法放固定书桌，可以用折叠桌搭配可折叠椅，周末学习和平时化妆都够用。",memory:["折叠桌","可折叠椅","学习","化妆"]},
+  rent_019:{title:"门后挂起来，桌面空出来",cover:"包包帽子都有家",author:"门后一平米",tags:["门后收纳","不打孔","出租屋"],subtopics:["不打孔上墙"],content:"门后挂架可以放包、帽子、围巾和次净衣，适合没有玄关的出租屋。",memory:["门后挂架","包包","帽子","次净衣"]},
+  rent_020:{title:"出租屋改造先别急着买",cover:"三件最容易闲置",author:"买前冷静一下",tags:["出租屋避坑","低预算","收纳"],subtopics:["出租屋避坑","低预算软装"],content:"大地毯、重型墙架和尺寸不准的置物柜最容易踩坑，先量尺寸再买可退换款。",memory:["大地毯","重型墙架","量尺寸","可退换"]},
+  rent_021:{title:"床边20cm塞下我的全部杂物",cover:"窄推车实测",author:"窄空间玩家",tags:["窄推车","床边收纳","小户型"],subtopics:["床底收纳","低预算软装"],content:"20cm窄推车能放纸巾、充电器、睡前读物和护手霜，比床头柜更适合小卧室。",memory:["20cm","窄推车","纸巾","充电器"]},
+  rent_022:{title:"阳台只有一米宽也别放弃",cover:"洗衣+收纳+晾晒",author:"一米阳台计划",tags:["阳台收纳","洗衣机上方","晾晒"],subtopics:["洗衣机上方","不打孔上墙"],content:"洗衣机上方放伸缩架，侧面挂清洁工具，顶部用可折叠晾衣杆，让小阳台保持顺手。",memory:["一米阳台","伸缩架","清洁工具","晾衣杆"]},
+  rent_023:{title:"桌面洞洞板让我少找东西",cover:"化妆品和文具分区",author:"桌面终于清爽",tags:["洞洞板","小空间工位","桌面收纳"],subtopics:["小空间工位","不打孔上墙"],content:"桌面洞洞板用来挂剪刀、数据线、发夹和小镜子，旁边放护肤收纳盒。",memory:["桌面洞洞板","数据线","发夹","护肤收纳盒"]},
+  rent_024:{title:"出租屋窗帘别买太厚",cover:"显小还压抑",author:"软装少花钱",tags:["窗帘","软装","小户型"],subtopics:["低预算软装","出租屋避坑"],content:"小房间更适合浅色窗帘和纱帘叠加，遮光帘只放睡眠区，视觉更轻。",memory:["浅色窗帘","纱帘","遮光帘","视觉更轻"]},
+  rent_025:{title:"厨房台面太小怎么活",cover:"能上墙就上墙",author:"厨房三平米",tags:["厨房收纳","不打孔","小户型"],subtopics:["不打孔上墙","出租屋避坑"],content:"调料用磁吸架和免钉置物架，砧板竖放，锅盖挂起来，台面只留常用电器。",memory:["磁吸架","免钉置物架","锅盖","台面"]},
+  rent_026:{title:"出租屋床头没有插座怎么办",cover:"延长线也要藏好",author:"电线看不见",tags:["电线整理","床边收纳","出租屋"],subtopics:["床底收纳","出租屋避坑"],content:"用带开关延长线、线槽和床边窄架整理电线，避免插线板直接堆在地上。",memory:["延长线","线槽","插线板","床边窄架"]},
+  rent_027:{title:"小房间配色别超过三种",cover:"真的会显大一点",author:"配色不纠结",tags:["配色","软装","小房间"],subtopics:["低预算软装"],content:"白色、浅木色和一点红色点缀就够了，收纳盒颜色统一后房间会更干净。",memory:["三种颜色","浅木色","红色点缀","统一收纳盒"]},
+  rent_028:{title:"搬家前我会先拍这几个地方",cover:"押金保卫战",author:"押金要拿回",tags:["出租屋避坑","押金","可复原"],subtopics:["出租屋避坑"],content:"入住前拍墙面、地板、门窗、家电和水槽细节，改造时尽量选择可复原方案。",memory:["入住前拍照","墙面","家电","可复原"]},
+  rent_029:{title:"床尾别空着，放这个刚好",cover:"长凳+收纳箱",author:"床尾一米",tags:["床尾收纳","小户型","收纳箱"],subtopics:["床底收纳","低预算软装"],content:"床尾放窄长凳，下面塞收纳箱，上面能放包和第二天要穿的衣服。",memory:["床尾","窄长凳","收纳箱","次日衣服"]},
+  rent_030:{title:"小空间工位不用一步到位",cover:"先解决坐得下",author:"临时书桌计划",tags:["小空间工位","折叠桌","避坑"],subtopics:["小空间工位","出租屋避坑","低预算软装"],content:"先买折叠桌和舒服的椅垫，再补充台灯、插线板和桌面收纳，别一开始就买大书桌。",memory:["先解决坐得下","折叠桌","台灯","别买大书桌"]},
+  rent_031:{title:"洗衣机旁边10cm也有用",cover:"夹缝架放清洁用品",author:"夹缝也要用上",tags:["洗衣机上方","夹缝收纳","小户型"],subtopics:["洗衣机上方","出租屋避坑"],content:"洗衣机旁边用10cm夹缝架，放洗衣凝珠、刷子和垃圾袋，上方再加收纳篮。",memory:["洗衣机旁边","10cm","夹缝架","收纳篮"]},
+  rent_032:{title:"便宜收纳盒别买太多",cover:"先量床底高度",author:"量尺寸再下单",tags:["床底收纳","出租屋避坑","收纳盒"],subtopics:["床底收纳","出租屋避坑"],content:"床底收纳盒要先量床脚高度和抽拉方向，太高会塞不进去，太深又不好拿。",memory:["床底高度","抽拉方向","太高","不好拿"]},
+  rent_033:{title:"没玄关的房间这样放包",cover:"进门不再一地东西",author:"没有玄关也行",tags:["不打孔","门后收纳","出租屋"],subtopics:["不打孔上墙","低预算软装"],content:"用门后挂钩、窄鞋架和小托盘做临时玄关，钥匙、包和口罩都有固定位置。",memory:["门后挂钩","窄鞋架","小托盘","临时玄关"]},
+  rent_034:{title:"床和墙之间这条缝别浪费",cover:"书和充电器都有地方",author:"床边不乱了",tags:["床边收纳","夹缝收纳","小户型"],subtopics:["床底收纳","低预算软装"],content:"床侧夹缝可以放超窄置物架，收纳书、眼罩、充电器和遥控器，比堆在床上舒服。",memory:["床侧夹缝","超窄置物架","充电器","遥控器"]},
+  rent_035:{title:"小桌子也能有完整工位",cover:"插线板藏到桌下",author:"桌面清空计划",tags:["小空间工位","洞洞板","理线"],subtopics:["小空间工位","不打孔上墙"],content:"小桌面只保留电脑和台灯，文具上洞洞板，插线板用理线盒放到桌下。",memory:["小桌子","电脑","台灯","理线盒"]},
+  rent_036:{title:"出租屋地毯我只推荐小块",cover:"好洗才会一直用",author:"软装实用派",tags:["低预算软装","出租屋避坑","地毯"],subtopics:["低预算软装","出租屋避坑"],content:"小房间选床边小地毯或可机洗地垫，比大面积地毯更容易清洁和搬走。",memory:["小块地毯","可机洗","容易清洁","搬走"]},
+  rent_037:{title:"洗手台太小就往上找空间",cover:"镜柜和侧边挂架",author:"小卫生间自救",tags:["洗衣机上方","不打孔","护肤台"],subtopics:["洗衣机上方","不打孔上墙"],content:"洗手台台面小，可以用镜柜、侧边免钉挂架和分层托盘，把护肤品和吹风机放上去。",memory:["洗手台","镜柜","免钉挂架","护肤品"]},
+  beauty_001:{title:"空瓶了才敢说的修护精华",cover:"敏感肌春夏记录",author:"慢慢护肤",tags:["护肤测评","敏感肌","精华"],subtopics:[],content:"记录三款修护精华的肤感、保湿度和后续搓泥情况。",memory:["修护精华","敏感肌","搓泥"]},
+  food_001:{title:"下班十分钟番茄肥牛饭",cover:"真的不用开火很久",author:"今晚吃很快",tags:["快手菜","一人食","番茄肥牛"],subtopics:[],content:"番茄、肥牛和米饭就能做一人食快手菜，适合工作日晚上。",memory:["十分钟","番茄","肥牛"]},
+  fashion_001:{title:"通勤衬衫别只会配西裤",cover:"五套不费力穿搭",author:"衣柜减法",tags:["通勤穿搭","衬衫","春夏"],subtopics:[],content:"用牛仔裤、半裙和薄针织搭配衬衫，适合春夏通勤。",memory:["衬衫","西裤","半裙"]},
+  study_001:{title:"考前7天别再重做整本题",cover:"错题回看顺序",author:"考试周自救",tags:["考前复习","学习方法","错题"],subtopics:[],content:"考前复习先回看高频错题，再整理公式和易混概念。",memory:["考前7天","错题","公式"]},
+};
+
+// Cover color palette per post
+const POST_COLORS = {};
+let ci = 0;
+Object.keys(POSTS_DATA).forEach(id => {
+  POST_COLORS[id] = COVER_COLORS[ci % COVER_COLORS.length];
+  ci++;
+});
+
+// ═══════════════════════════
+// STATE
+// ═══════════════════════════
+let albumsGenerated = false;
+let currentAlbum = null;
+let currentSubtopic = '全部';
+let searchVisible = false;
+let lastSearchToggleAt = 0;
+let toastTimer = null;
+
+// ═══════════════════════════
+// CLOCK
+// ═══════════════════════════
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+}
+updateClock();
+setInterval(updateClock, 30000);
+
+// ═══════════════════════════
+// RENDER HELPERS
+// ═══════════════════════════
+function makePostCard(id, clickable=true) {
+  const p = POSTS_DATA[id];
+  if (!p) return '';
+  const [c1, c2] = POST_COLORS[id];
+  const onclick = clickable ? '' : '';
+  return `<div class="post-card" ${onclick}>
+    <div class="post-cover" style="background:linear-gradient(160deg,${c1},${c2})">
+      <span class="post-cover-label">${p.cover}</span>
+    </div>
+    <div class="post-info">
+      <div class="post-title">${p.title}</div>
+      <div class="post-author">${p.author}</div>
+    </div>
+  </div>`;
+}
+
+function renderHomeGrid() {
+  const grid = document.getElementById('home-posts-grid');
+  const ids = albumsGenerated ? DEFAULT_IDS.filter(id => !id.startsWith('rent_')) : DEFAULT_IDS;
+  grid.innerHTML = ids.map(id => makePostCard(id)).join('') + `
+    <div class="notes-list-hint" aria-label="样例笔记说明">
+      <div class="notes-list-hint-title">已展示部分样例笔记</div>
+      <div class="notes-list-hint-sub">真实使用时会继续加载更多未分类收藏</div>
+    </div>
+  `;
+}
+
+function updateHomeSummary() {
+  const subtitle = document.getElementById('home-subtitle');
+  const label = document.getElementById('home-notes-label');
+  subtitle.innerHTML = `共收藏 <span id="total-count">${TOTAL_FAVORITES}</span> 篇笔记`;
+  if (albumsGenerated) {
+    label.textContent = `未分类笔记 (${UNCLASSIFIED_COUNT})`;
+  } else {
+    label.textContent = `未分类笔记 (${TOTAL_FAVORITES})`;
+  }
+}
+
+function renderAlbumGrid(subtopic='全部') {
+  const ids = Object.keys(POSTS_DATA).filter(id => id.startsWith('rent_'));
+  const filtered = subtopic === '全部' ? ids :
+    ids.filter(id => (POSTS_DATA[id].subtopics||[]).includes(subtopic));
+  const grid = document.getElementById('album-posts-grid');
+  grid.innerHTML = filtered.map(id => makePostCard(id)).join('');
+}
+
+function renderSubtopicChips() {
+  const container = document.getElementById('subtopic-chips');
+  container.innerHTML = SUBTOPICS.map(s =>
+    `<button class="chip ${s===currentSubtopic?'active':''}" onclick="filterSubtopic('${s}')">${s}</button>`
+  ).join('');
+}
+
+function enableChipDragScroll() {
+  const row = document.getElementById('subtopic-chips');
+  let isDragging = false;
+  let startX = 0;
+  let startScrollLeft = 0;
+  let suppressClick = false;
+
+  row.addEventListener('pointerdown', (event) => {
+    if (event.button !== undefined && event.button !== 0) return;
+    isDragging = true;
+    suppressClick = false;
+    startX = event.clientX;
+    startScrollLeft = row.scrollLeft;
+    row.classList.add('dragging');
+  });
+
+  row.addEventListener('pointermove', (event) => {
+    if (!isDragging) return;
+    const deltaX = event.clientX - startX;
+    if (Math.abs(deltaX) > 10) {
+      suppressClick = true;
+      event.preventDefault();
+    }
+    row.scrollLeft = startScrollLeft - deltaX;
+  });
+
+  const stopDragging = () => {
+    if (!isDragging) return;
+    isDragging = false;
+    row.classList.remove('dragging');
+  };
+
+  row.addEventListener('pointerup', stopDragging);
+  row.addEventListener('pointercancel', stopDragging);
+  row.addEventListener('mouseleave', () => {
+    isDragging = false;
+    row.classList.remove('dragging');
+  });
+
+  row.addEventListener('click', (event) => {
+    if (!suppressClick) return;
+    event.preventDefault();
+    event.stopPropagation();
+    suppressClick = false;
+  }, true);
+}
+
+function renderAlbumsList() {
+  const list = document.getElementById('albums-list');
+  const empty = document.getElementById('albums-empty');
+  if (!albumsGenerated) {
+    list.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  const albums = [
+    {id:'rent',title:'小空间改造灵感',count:37,meta:'AI 整理',colors:[['#c0392b','#e74c3c'],['#27ae60','#2ecc71'],['#2980b9','#3498db']]},
+  ];
+  list.innerHTML = albums.map(a => `
+    <div class="album-card" onclick="openAlbum('${a.id}')">
+      <div class="album-cover-strip">
+        ${a.colors.map(([c1,c2]) => `<div style="background:linear-gradient(160deg,${c1},${c2})"></div>`).join('')}
+      </div>
+      <div class="album-card-body">
+        <div class="album-card-info">
+          <div class="album-card-title">${a.title}</div>
+          <div class="album-card-meta">${a.count} 篇笔记 · 6 个子主题</div>
+        </div>
+        <div class="album-ai-tag">✨ AI 整理</div>
+      </div>
+    </div>
+  `).join('') + '<div style="height:12px"></div>';
+}
+
+// ═══════════════════════════
+// INTERACTIONS
+// ═══════════════════════════
+function switchHomeTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('home-notes-tab').style.display = tab==='notes' ? '' : 'none';
+  document.getElementById('home-albums-tab').style.display = tab==='albums' ? '' : 'none';
+}
+
+function dismissSuggestion() {
+  const card = document.getElementById('ai-suggestion-card');
+  card.style.transition = 'opacity 250ms, transform 250ms';
+  card.style.opacity = '0';
+  card.style.transform = 'translateY(-6px)';
+  setTimeout(() => card.style.display = 'none', 260);
+}
+
+function startOrganize() {
+  const overlay = document.getElementById('loading-overlay');
+  overlay.style.display = 'flex';
+  overlay.style.opacity = '0';
+  setTimeout(() => { overlay.style.transition = 'opacity 200ms'; overlay.style.opacity = '1'; }, 10);
+
+  const steps = ['step-1','step-2','step-3','step-4'];
+  steps.forEach((id, i) => {
+    setTimeout(() => {
+      document.getElementById(id).classList.add('visible');
+      if (i > 0) document.getElementById(steps[i-1]).classList.add('done');
+    }, 400 + i * 420);
+  });
+
+  setTimeout(() => {
+    overlay.style.opacity = '0';
+    setTimeout(() => {
+      overlay.style.display = 'none';
+      steps.forEach(id => {
+        document.getElementById(id).classList.remove('visible','done');
+      });
+      albumsGenerated = true;
+      updateHomeSummary();
+      renderHomeGrid();
+      dismissSuggestion();
+      renderAlbumsList();
+      showToast('整理完成 ✨', `已从你的 ${TOTAL_FAVORITES} 篇收藏中整理出 ${ORGANIZED_COUNT} 篇笔记`, {
+        cta: '点击查看专辑',
+        onClick: () => openAlbum('rent')
+      });
+    }, 250);
+  }, 2200);
+}
+
+function showToast(title, sub, options={}) {
+  const toast = document.getElementById('toast');
+  const cta = document.getElementById('toast-cta');
+  document.getElementById('toast-title').textContent = title;
+  document.getElementById('toast-sub').textContent = sub;
+  cta.textContent = options.cta || '';
+  cta.style.display = options.cta ? '' : 'none';
+  toast.classList.toggle('actionable', Boolean(options.onClick));
+  toast.onclick = options.onClick ? () => {
+    toast.classList.remove('show');
+    options.onClick();
+  } : null;
+  if (toastTimer) clearTimeout(toastTimer);
+  toast.classList.add('show');
+  toastTimer = setTimeout(() => {
+    toast.classList.remove('show');
+    toast.classList.remove('actionable');
+    toast.onclick = null;
+  }, 5000);
+}
+
+function openAlbum(id) {
+  currentAlbum = id;
+  currentSubtopic = '全部';
+  searchVisible = false;
+  document.getElementById('search-input').value = '';
+  document.getElementById('album-search-container').style.display = 'none';
+  document.getElementById('album-search-btn').classList.remove('active');
+  document.getElementById('search-results').style.display = 'none';
+  document.getElementById('album-posts-grid').style.display = '';
+  renderSubtopicChips();
+  renderAlbumGrid('全部');
+  document.getElementById('screen-home').classList.remove('active');
+  document.getElementById('home-bottom-nav').style.display = 'none';
+  document.getElementById('screen-album').classList.add('active');
+  document.getElementById('screen-album').scrollTop = 0;
+}
+
+function goBack() {
+  document.getElementById('screen-album').classList.remove('active');
+  document.getElementById('screen-home').classList.add('active');
+  document.getElementById('home-bottom-nav').style.display = 'flex';
+  switchHomeTab('albums', document.querySelector('.tab-btn[data-tab="albums"]'));
+}
+
+function filterSubtopic(s) {
+  currentSubtopic = s;
+  renderSubtopicChips();
+  renderAlbumGrid(s);
+  document.getElementById('search-input').value = '';
+  document.getElementById('search-results').style.display = 'none';
+  document.getElementById('album-posts-grid').style.display = '';
+}
+
+function toggleSearch() {
+  searchVisible = !searchVisible;
+  const searchContainer = document.getElementById('album-search-container');
+  const searchButton = document.getElementById('album-search-btn');
+  searchContainer.style.display = searchVisible ? '' : 'none';
+  searchButton.classList.toggle('active', searchVisible);
+  if (searchVisible) {
+    searchContainer.scrollIntoView({behavior:'smooth', block:'nearest'});
+    setTimeout(() => document.getElementById('search-input').focus(), 100);
+  } else {
+    document.getElementById('search-results').style.display = 'none';
+    document.getElementById('album-posts-grid').style.display = '';
+  }
+}
+
+function toggleSearchFromButton(event) {
+  event?.preventDefault();
+  event?.stopPropagation();
+  const now = Date.now();
+  if (now - lastSearchToggleAt < 320) return;
+  lastSearchToggleAt = now;
+  toggleSearch();
+}
+
+function fillSearch(q) {
+  document.getElementById('search-input').value = q;
+  handleSearch(q);
+}
+
+function searchPosts(query) {
+  if (!query.trim()) return [];
+  const norm = query.toLowerCase().replace('上面','上方');
+  const synonyms = {
+    '洗衣机':['洗衣机','阳台','护肤台','置物架','洞洞板'],
+    '上方':['上方','上面','伸缩架','置物架','层板'],
+    '利用':['利用','收纳','空间','放'],
+    '床':['床底','床边','床尾','收纳箱'],
+    '打孔':['不打孔','免钉','无痕','洞洞板'],
+    '工位':['工位','折叠桌','窗边','书桌'],
+  };
+  let tokens = new Set(norm.replace(/[？?]/g,'').split(/\s+/).filter(Boolean));
+  for (const [key, words] of Object.entries(synonyms)) {
+    if (norm.includes(key)) words.forEach(w => tokens.add(w));
+  }
+  const rentIds = Object.keys(POSTS_DATA).filter(id => id.startsWith('rent_'));
+  const scored = [];
+  for (const id of rentIds) {
+    const p = POSTS_DATA[id];
+    const hay = [p.title, p.content, ...p.tags, ...p.subtopics, ...(p.memory||[])].join(' ').toLowerCase();
+    let score = 0;
+    tokens.forEach(t => { if (t && hay.includes(t)) score++; });
+    if (score > 0) scored.push({score, id});
+  }
+  scored.sort((a,b) => b.score - a.score);
+  return scored.slice(0,6).map(x => x.id);
+}
+
+function getMatchReason(id, query) {
+  const p = POSTS_DATA[id];
+  const norm = query.toLowerCase().replace('上面','上方');
+  const found = [...p.tags, ...p.subtopics, ...(p.memory||[])].find(kw => norm.includes(kw.toLowerCase()) || kw.toLowerCase().includes(norm.split('')[0]));
+  if (found) return `包含「${found}」相关内容`;
+  return `与「${query.slice(0,6)}」语义相近`;
+}
+
+function handleSearch(q) {
+  const resultsEl = document.getElementById('search-results');
+  const gridEl = document.getElementById('album-posts-grid');
+  if (!q.trim()) {
+    resultsEl.style.display = 'none';
+    gridEl.style.display = '';
+    return;
+  }
+  const results = searchPosts(q);
+  gridEl.style.display = 'none';
+  if (results.length === 0) {
+    resultsEl.style.display = '';
+    resultsEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-faint);font-size:13px">没有找到相关笔记，换个描述试试</div>';
+    return;
+  }
+  resultsEl.style.display = '';
+  resultsEl.innerHTML = `<div style="padding:6px 12px 4px;font-size:11px;color:var(--text-muted)">找到 ${results.length} 篇相关笔记</div>` +
+    results.map(id => {
+      const p = POSTS_DATA[id];
+      const reason = getMatchReason(id, q);
+      return `<div class="search-result-card matched">
+        <div class="search-result-title">${p.title}</div>
+        <div class="search-result-snippet">${p.content.slice(0,48)}…</div>
+        <div class="search-match-reason">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0;margin-top:1px"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          ${reason}
+        </div>
+      </div>`;
+    }).join('');
+}
+
+// ═══════════════════════════
+// WELCOME MODAL
+// ═══════════════════════════
+function closeModal() {
+  const m = document.getElementById('welcome-modal');
+  m.classList.remove('show');
+  setTimeout(() => {
+    m.style.display = 'none';
+    m.style.opacity = '';
+  }, 260);
+}
+
+// Init
+window.addEventListener('DOMContentLoaded', () => {
+  renderHomeGrid();
+  updateHomeSummary();
+  renderAlbumsList();
+  enableChipDragScroll();
+  const backBtn = document.getElementById('album-back-btn');
+  backBtn.addEventListener('click', goBack);
+  const searchBtn = document.getElementById('album-search-btn');
+  searchBtn.addEventListener('click', toggleSearchFromButton);
+  // Show welcome modal after brief delay
+  setTimeout(() => {
+    const m = document.getElementById('welcome-modal');
+    m.style.display = 'flex';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => m.classList.add('show'));
+    });
+  }, 400);
+});
+</script>
+</body>
+</html>
