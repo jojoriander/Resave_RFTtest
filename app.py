@@ -506,6 +506,115 @@ footer {
     border: 0 !important;
 }
 
+.album-rail-wrap {
+    margin: -2px 0 12px;
+}
+
+.album-rail-head {
+    margin: 0;
+    line-height: 1.2;
+}
+
+.album-rail-head h5 {
+    margin: 0 0 2px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #1f1f24;
+    letter-spacing: 0;
+}
+
+.album-rail-head span {
+    font-size: 10px;
+    color: #999999;
+}
+
+.album-rail-scroll {
+    margin: 0 -20px;
+    padding: 2px 20px 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.album-rail-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.album-rail {
+    display: flex;
+    gap: 8px;
+    width: max-content;
+}
+
+.album-rail-card {
+    flex: 0 0 auto;
+    width: 138px;
+    border-radius: 12px;
+    border: 1px solid #ffe0e4;
+    background:
+        radial-gradient(circle at 86% -4%, rgba(255, 215, 221, 0.7), transparent 50%),
+        linear-gradient(135deg, #fff7f8 0%, #ffffff 70%);
+    padding: 10px 12px 11px;
+    position: relative;
+    overflow: hidden;
+}
+
+.album-rail-card::before {
+    content: "◈";
+    position: absolute;
+    top: 9px;
+    right: 11px;
+    font-size: 11px;
+    color: #ff2d55;
+    opacity: 0.65;
+}
+
+.album-rail-card .rail-tag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    color: #ff2d55;
+    background: rgba(255, 45, 85, 0.10);
+    padding: 2px 6px;
+    border-radius: 999px;
+    margin-bottom: 7px;
+    letter-spacing: 0.3px;
+}
+
+.album-rail-card .rail-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #222222;
+    line-height: 1.25;
+    margin-bottom: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.album-rail-card .rail-meta {
+    font-size: 10px;
+    color: #888888;
+    line-height: 1.2;
+}
+
+.album-rail-head .rail-cta div.stButton > button {
+    min-height: 22px;
+    padding: 2px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 999px;
+    border: 1px solid #ffe0e4;
+    background: #ffffff;
+    color: #ff2d55;
+}
+
+.album-rail-head .rail-cta div.stButton > button:hover {
+    border-color: #ff2d55;
+    background: #ff2d55;
+    color: #ffffff;
+}
+
 .album-list {
     display: grid;
     gap: 10px;
@@ -1112,6 +1221,43 @@ div[data-testid="stFormSubmitButton"] > button:hover {
     border-color: #ff2d55;
 }
 
+.search-suggest {
+    margin: -6px 0 12px;
+}
+
+.search-suggest-label {
+    margin: 0 0 6px;
+    font-size: 10px;
+    color: #999999;
+    line-height: 1;
+}
+
+.search-suggest [data-testid="stHorizontalBlock"] {
+    gap: 6px;
+}
+
+.search-suggest div.stButton > button {
+    width: 100%;
+    min-height: 26px;
+    padding: 4px 9px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #555555;
+    background: #fafafa;
+    border: 1px solid #eeeeee;
+    border-radius: 999px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.search-suggest div.stButton > button:hover {
+    background: #fff7f8;
+    border-color: #ffb8c4;
+    color: #ff2d55;
+}
+
 .reason {
     border-left: 3px solid #ff2d55;
     background: #fff7f8;
@@ -1455,6 +1601,53 @@ def current_theme_config() -> dict:
     }
 
 
+def render_album_rail() -> None:
+    """笔记 tab 顶部的主题专辑轮播，使 AI 生成的价值持续可见。
+
+    仅在已生成至少一个专辑时展示，避免空状态占位。
+    点击“查看全部”跳转到专辑 tab，同时轮播卡本身作为体现 AI 成果的静态展示，
+    避免复杂点击跳转逻辑与 Streamlit 布局抵触。
+    """
+    ids = album_ids()
+    if not ids:
+        return
+
+    total = sum(ALBUM_NOTE_COUNTS.get(theme_id, 0) for theme_id in ids)
+
+    st.markdown('<div class="album-rail-wrap">', unsafe_allow_html=True)
+    head_left, head_right = st.columns([0.68, 0.32], vertical_alignment="center")
+    with head_left:
+        st.markdown(
+            f'<div class="album-rail-head">'
+            f'<h5>AI 整理的主题专辑</h5>'
+            f'<span>{len(ids)} 个专辑 · {total} 篇笔记</span>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+    with head_right:
+        st.markdown('<div class="rail-cta">', unsafe_allow_html=True)
+        if st.button("查看全部 ›", key="album_rail_view_all", use_container_width=True):
+            st.session_state.main_tab = "albums"
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    cards = []
+    for theme_id in ids:
+        config = theme_config_for(theme_id)
+        cards.append(
+            f'<div class="album-rail-card">'
+            f'<span class="rail-tag">AI 整理</span>'
+            f'<div class="rail-title">{escape(config["title"])}</div>'
+            f'<div class="rail-meta">{config["count"]} 篇 · {config["subtopic_count"]} 个子主题</div>'
+            f'</div>'
+        )
+    st.markdown(
+        f'<div class="album-rail-scroll"><div class="album-rail">{"".join(cards)}</div></div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
 def render_value_banner() -> None:
     """首页价值许诺型 banner，向面试官（首次进入的用户）传达产品核心价值。
 
@@ -1552,6 +1745,7 @@ def render_default_page() -> None:
         render_albums_page()
     else:
         render_value_banner()
+        render_album_rail()
         render_ai_prompt()
 
         st.markdown(
@@ -1627,7 +1821,27 @@ def filtered_by_subtopic(posts: list[dict]) -> list[dict]:
     return [post for post in posts if active in post["subtopics"]]
 
 
+SEARCH_SUGGESTIONS = [
+    "洗衣机上面怎么利用？",
+    "不打孔上墙有什么办法",
+    "小空间工位怎么布置",
+]
+
+
 def render_search() -> list[dict] | None:
+    """主题页搜索区。
+
+    除输入框外提供 3 个推荐问句 chip，点击后直接填充并触发搜索。
+    设计考量：
+    - 推荐问句为 AI 预测的“用户可能想问”，增强产品智能感
+    - 避免面试官随手输入不及模糊匹配范围的 query 导致空结果
+    - chip 底色差于主色，默认灰调，hover 才点亮品牌色，不与主 CTA 争夺注意力
+    """
+    pending_query = st.session_state.pop("_pending_search", None)
+    if pending_query is not None:
+        st.session_state.last_search = pending_query
+        st.session_state.search_query = pending_query
+
     st.markdown('<div class="search-box">', unsafe_allow_html=True)
     with st.form("search_form", clear_on_submit=False, border=False):
         input_col, button_col = st.columns([0.86, 0.14])
@@ -1642,6 +1856,19 @@ def render_search() -> list[dict] | None:
             submitted = st.form_submit_button("⌕", use_container_width=True)
         if submitted:
             st.session_state.last_search = query
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown(
+        '<div class="search-suggest">'
+        '<p class="search-suggest-label">你可能想问</p>',
+        unsafe_allow_html=True,
+    )
+    suggest_cols = st.columns(len(SEARCH_SUGGESTIONS))
+    for idx, suggestion in enumerate(SEARCH_SUGGESTIONS):
+        with suggest_cols[idx]:
+            if st.button(suggestion, key=f"suggest_{idx}", use_container_width=True):
+                st.session_state._pending_search = suggestion
+                st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 
     if st.session_state.last_search.strip():
