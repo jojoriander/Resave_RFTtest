@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resave · Demo</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background-color: #f5f0eb;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+    padding: 40px 20px;
+  }
+
+  .demo-label {
+    font-size: 12px;
+    color: #b0a89e;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    font-weight: 500;
+  }
+
+  .phone-wrapper {
+    position: relative;
+    width: 393px;
+    height: 852px;
+    flex-shrink: 0;
+  }
+
+  .phone-frame {
+    position: absolute;
+    inset: -19px -14px;
+    border-radius: 56px;
+    background: linear-gradient(160deg, #2e2e2e 0%, #1a1a1a 60%, #222 100%);
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.06) inset,
+      0 0 0 1px #111,
+      0 40px 100px rgba(0,0,0,0.4),
+      0 15px 40px rgba(0,0,0,0.25);
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .phone-frame::before {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    border-radius: 55px;
+    border: 1px solid rgba(255,255,255,0.07);
+    pointer-events: none;
+  }
+
+  .phone-frame::after {
+    content: '';
+    position: absolute;
+    right: -5px;
+    top: 172px;
+    width: 5px;
+    height: 76px;
+    background: #252525;
+    border-radius: 0 4px 4px 0;
+    box-shadow: 1px 0 0 #111;
+  }
+
+  .phone-screen {
+    position: absolute;
+    inset: 0;
+    border-radius: 48px;
+    overflow: hidden;
+    background: #fff;
+    z-index: 5;
+  }
+
+  .dynamic-island {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 118px;
+    height: 34px;
+    background: #111;
+    border-radius: 20px;
+    z-index: 20;
+    pointer-events: none;
+  }
+
+  .dynamic-island::after {
+    content: '';
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    background: #1c1c1e;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.04);
+  }
+
+  .phone-screen iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+
+  .btn-silent, .btn-vol-up, .btn-vol-dn {
+    position: absolute;
+    left: -19px;
+    width: 5px;
+    background: #252525;
+    border-radius: 3px 0 0 3px;
+    box-shadow: -1px 0 0 #111;
+    z-index: 15;
+    pointer-events: none;
+  }
+  .btn-silent  { top: 124px; height: 32px; }
+  .btn-vol-up  { top: 176px; height: 68px; }
+  .btn-vol-dn  { top: 260px; height: 68px; }
+
+  .home-bar {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 126px;
+    height: 5px;
+    background: rgba(0,0,0,0.18);
+    border-radius: 3px;
+    z-index: 20;
+    pointer-events: none;
+  }
+
+  .demo-tagline {
+    margin-top: 32px;
+    font-size: 13px;
+    color: #c0b8b0;
+    letter-spacing: 0.03em;
+  }
+</style>
+</head>
+<body>
+
+  <p class="demo-label">Product Demo &nbsp;·&nbsp; Resave</p>
+
+  <div class="phone-wrapper">
+    <div class="phone-frame"></div>
+    <div class="btn-silent"></div>
+    <div class="btn-vol-up"></div>
+    <div class="btn-vol-dn"></div>
+    <div class="dynamic-island"></div>
+    <div class="phone-screen">
+      <iframe
+        src="resave-demo.html"
+        title="Resave App Demo"
+        scrolling="yes">
+      </iframe>
+    </div>
+    <div class="home-bar"></div>
+  </div>
+
+  <p class="demo-tagline">收藏夹 AI 整理助手 · 产品原型</p>
+
+</body>
+</html>
